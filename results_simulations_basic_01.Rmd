@@ -1,0 +1,769 @@
+---
+title: 'Model Results: Basic'
+output: 
+  flexdashboard::flex_dashboard:
+    theme: cosmo
+    orientation: rows
+    vertical_layout: scroll
+    social: menu
+    navbar:
+      - { title: "Janez Žibert, UL ZF in FRI, 2022", href: "https://apps.lusy.fri.uni-lj.si", target: _blank, align: right }
+
+
+---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(knitr)
+library(dplyr)
+library(tidyr)
+
+
+library(ggplot2)
+library(scales)
+
+library(plotly)
+library(stringr)
+
+library(flexdashboard)
+library(kableExtra)
+
+rm(list=ls())
+
+
+
+
+############################################
+##### model data  ####
+############################################
+
+tdat = read.csv("epimod_latest.csv")
+
+
+
+##### aux var. ########
+
+# Here we define spaces as the big separator
+point <- format_format(big.mark = " ", decimal.mark = ",", scientific = FALSE)
+
+last_date = Sys.Date()
+
+
+## colors
+cases.col  = "#338D73"
+hosp.col   = "cornflowerblue"
+icu.col    = "red"
+deaths.col = "grey"
+  
+
+```
+
+
+
+
+
+
+
+
+
+
+Forecasts {data-icon="fa-signal"}
+=======================================================================
+  
+
+Row {data-height=30}
+-------------------------------------
+  
+Report made on: `r format(Sys.time(), "%d-%m-%Y %H:%M:%S")`.  
+
+
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Short description
+  
+Forecasts are made for daily cases, hospital and intensive care units stays and daily deaths. Forecasts are made with the model [SEIRC19SI.v5](https://apps.lusy.fri.uni-lj.si). 
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Projection: daily cases: 7-day smoothed average 
+  
+  
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 25000
+
+pg = ggplot(tdat, aes(x=day, y = OKU)) +
+  
+  geom_line(aes(color="7-days average: cases"), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("7-days average: cases" = cases.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Projection: actual hospitalizations 
+  
+  
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+maxy = 2000 
+
+pg = ggplot(tdat, aes(x=day, y = HOS)) +
+  
+  geom_line(aes(color="actual hosp."), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("actual hosp." = hosp.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+```
+
+
+
+
+Row
+-----------------------------------------------------------------------
+
+### Projection: intensive care units
+  
+  
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+maxy = 400
+
+pg = ggplot(tdat, aes(x=day, y = ICU)) +
+  
+  geom_line(aes(color="actual ICU"), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("actual ICU" =  icu.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+```
+
+Row
+----------------------------------------------------------------------
+
+### Projection deaths: 7-day average
+  
+  
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+maxy = 60
+
+pg = ggplot(tdat, aes(x=day, y = DSM)) +
+  
+  geom_line(aes(color="7-days average: deaths"), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("7-days average: deaths" = deaths.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+```
+
+Projections: cumulative  {data-icon="fa-chart-bar"}
+=======================================================================
+  
+```{r , echo=FALSE, warning=FALSE}
+
+kdat = data.frame(day = tdat$day, 
+                  CHOS = round(cumsum(tdat$HOSin),0),
+                  CICU = round(cumsum(tdat$ICUin),0),
+                  CDTH = round(cumsum(tdat$DSM),0)
+                  )
+
+
+```
+
+Row
+-----------------------------------------------------------------------
+  
+  
+  
+### Projection: cumulative hospital admissions
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 40000
+
+pg = ggplot(kdat, aes(x=day, y = CHOS)) +
+  
+  geom_line(aes(color="cum. hosp. adm."), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("cum. hosp. adm." = hosp.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+  
+### Projection: cumulative ICU admissions
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 7000
+
+pg = ggplot(kdat, aes(x=day, y = CICU)) +
+  
+  geom_line(aes(color="cum. ICU adm."), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("cum. ICU adm." = icu.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+  
+  
+### Projection: cumulative deaths
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 7000
+
+pg = ggplot(kdat, aes(x=day, y = CDTH)) +
+  
+  geom_line(aes(color="cum. deaths"), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("cum. deaths" = deaths.col)) +
+  
+  ylab("number") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+
+```
+
+
+
+
+
+
+Weekly Incidence {data-icon="fa-chart-bar"}
+=======================================================================
+
+
+```{r , echo=FALSE, warning=FALSE}
+
+widat = data.frame()
+
+for (w in seq(7, max(tdat$day)-40, 7) )
+{
+  week_num = round(w/7,0)
+  
+  w.inc.cases = round(7*(tdat$OKU[tdat$day==w]), digits = 0)
+  
+  w.inc.hosp = round( sum( tdat$HOSin[tdat$day>(w-7) & tdat$day<=w]), digits = 0)
+  
+  w.inc.icu = round( sum( tdat$ICUin[tdat$day>(w-7) & tdat$day<=w]), digits = 0)
+  
+  w.inc.deaths = round(7*(tdat$DSM[tdat$day==w]), digits = 0)
+  
+  
+  hdat = data.frame(week =  week_num,
+                    w.inc.cases = w.inc.cases,
+                    w.inc.hosp  = w.inc.hosp,
+                    w.inc.icu  = w.inc.icu,
+                    w.inc.deaths = w.inc.deaths)
+  
+  widat = rbind(widat, hdat)
+  
+}
+
+
+
+
+```
+
+
+
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Weekly incidence: cases
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+maxy = 1.1*max(widat$w.inc.cases)
+
+pg1 = ggplot(widat, aes(x=week, y = w.inc.cases)) +
+  
+  geom_col( stat="identity", position=position_dodge(), color = cases.col, fill= cases.col, alpha = 0.7, width=0.5) +
+  
+  scale_x_continuous(breaks = seq(0,max(widat$week), 5)) +
+  scale_y_continuous(labels = point) +
+  coord_cartesian(ylim = c(0, maxy))+
+
+  ylab("number") + xlab("week") + 
+  
+
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12))
+
+
+
+myplot = ggplotly(pg1, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+```
+
+
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Weekly incidence: hospital admissions 
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 1.3*max(widat$w.inc.hosp)
+
+pg1 = ggplot(widat, aes(x=week, y = w.inc.hosp)) +
+  
+  geom_col( stat="identity", position=position_dodge(), color = hosp.col, fill= hosp.col, alpha = 0.7, width=0.5) +
+  
+  scale_x_continuous(breaks = seq(0,max(widat$week), 5)) +
+  scale_y_continuous(labels = point) +
+  coord_cartesian(ylim = c(0, maxy))+
+
+  ylab("number") + xlab("week") + 
+  
+
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12))
+
+
+
+myplot = ggplotly(pg1, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Weekly incidence: ICU admissions 
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+
+maxy = 1.3*max(widat$w.inc.icu)
+
+pg1 = ggplot(widat, aes(x=week, y = w.inc.icu)) +
+  
+  geom_col( stat="identity", position=position_dodge(), color = icu.col, fill= icu.col, alpha = 0.7, width=0.5) +
+  
+  scale_x_continuous(breaks = seq(0,max(widat$week), 5)) +
+  scale_y_continuous(labels = point) +
+  coord_cartesian(ylim = c(0, maxy))+
+
+  ylab("number") + xlab("week") + 
+  
+
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12))
+
+
+
+myplot = ggplotly(pg1, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Weekly incidence: deaths
+
+
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=7}
+
+
+maxy = 1.3*max(widat$w.inc.deaths)
+
+pg1 = ggplot(widat, aes(x=week, y = w.inc.deaths)) +
+  
+  geom_col( stat="identity", position=position_dodge(), color = deaths.col, fill= deaths.col, alpha = 0.7, width=0.5) +
+  
+  scale_x_continuous(breaks = seq(0,max(widat$week), 5)) +
+  scale_y_continuous(labels = point) +
+  coord_cartesian(ylim = c(0, maxy))+
+
+  ylab("number") + xlab("week") + 
+  
+
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12))
+
+
+
+myplot = ggplotly(pg1, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+```
+
+
+Vaccination  {data-icon="fa-vial"}
+=======================================================================
+  
+
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Vaccination rates
+  
+```{r , echo=FALSE, warning=FALSE, fig.width=14, fig.height=12}
+
+
+maxy = 100
+
+pg = ggplot(tdat, aes(x=day, y = VACC.rate*100)) +
+  
+  geom_line(aes(color="vaccination rate"), size=1.7 ) +
+  
+  scale_y_continuous(labels = point) +
+  scale_x_continuous(breaks = seq(0,max(tdat$day), 28)) +
+  
+  coord_cartesian(ylim = c(0, maxy), xlim = c(0, max(tdat$day) - 70)) +
+  
+  scale_color_manual(values = c("vaccination rate" = "orange")) +
+  
+  ylab("percentages") +
+  
+  theme_bw() +
+  theme(legend.position = "bottom") + 
+  theme(axis.text.x = element_text(angle = 30)) +
+  theme(text = element_text(size=12)) 
+
+
+myplot = ggplotly(pg, height = 600) %>%
+  config(displayModeBar = F) %>%
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, yanchor = "top", y = -0.2, title = list(text = "<b></b>"))) %>%
+  layout(paper_bgcolor='transparent') %>%
+  layout(yaxis = list(hoverformat = '.1f')) 
+
+
+# correct label names in plotly
+for (i in 1:length(myplot$x$data)){
+  if (!is.null(myplot$x$data[[i]]$name)){
+    myplot$x$data[[i]]$name =  gsub("\\(","",str_split(myplot$x$data[[i]]$name,",")[[1]][1])
+  }
+}
+
+myplot
+
+
+
+
+```
+
