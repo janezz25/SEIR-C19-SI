@@ -10,7 +10,7 @@ The model was and still is operatively used in daily forecasts and simulations o
 ### Usage
 
 
-We need firstly to run the model with all parameters and data to produce forecast projections.
+We need firstly to run the model with all the parameters and data to produce forecast projections.
 
 ```
 setwd("path_to_working_directory")
