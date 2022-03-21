@@ -34,6 +34,6 @@ The vizualizations include:
 
 ### Note
 
-This example is not calibrated to the actual epidemiological data in Slovenia. For the actual forecasts and simulations of the Covid19 in Slovenia please go to  https://apps.lusy.fri.uni-lj.si/~janezz/reports/long-term/zadnje_projekcije.html 
+This example is not calibrated to the actual epidemiological situation in Slovenia. For the actual forecasts and simulations of the Covid19 in Slovenia please go to  https://apps.lusy.fri.uni-lj.si/~janezz/reports/long-term/zadnje_projekcije.html 
 
 
